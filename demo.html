@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Entry System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <h1 class="text-center">Item List and Data Entry</h1>
+
+        <!-- Table to Display Data -->
+        <div class="my-4">
+            <h2>Item List</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Pieces per Box</th>
+                        <th>Daily Total</th>
+                        <th>Date</th>
+                        <th>Item Date</th>
+                        <th>Qty Box</th>
+                        <th>Qty Piece</th>
+                        <th>Time</th>
+                        <th>Total Qty</th>
+                    </tr>
+                </thead>
+                <tbody id="itemTableBody">
+                    <!-- Rows will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Form to Create New Entry -->
+        <div class="my-4">
+            <h2>Create New Entry</h2>
+            <form id="entryForm">
+                <div class="mb-3">
+                    <label for="itemName" class="form-label">Item Name</label>
+                    <input type="text" class="form-control" id="itemName" name="itemName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="piecesPerBox" class="form-label">Pieces per Box</label>
+                    <input type="number" class="form-control" id="piecesPerBox" name="piecesPerBox" required>
+                </div>
+                <div class="mb-3">
+                    <label for="dailyTotal" class="form-label">Daily Total</label>
+                    <input type="number" class="form-control" id="dailyTotal" name="dailyTotal" required>
+                </div>
+                <div class="mb-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" required>
+                </div>
+                <div class="mb-3">
+                    <label for="itemDate" class="form-label">Item Date</label>
+                    <input type="date" class="form-control" id="itemDate" name="itemDate" required>
+                </div>
+                <div class="mb-3">
+                    <label for="qtyBox" class="form-label">Quantity Box</label>
+                    <input type="number" class="form-control" id="qtyBox" name="qtyBox" required>
+                </div>
+                <div class="mb-3">
+                    <label for="qtyPiece" class="form-label">Quantity Piece</label>
+                    <input type="number" class="form-control" id="qtyPiece" name="qtyPiece">
+                </div>
+                <div class="mb-3">
+                    <label for="time" class="form-label">Time</label>
+                    <input type="time" class="form-control" id="time" name="time" required>
+                </div>
+                <div class="mb-3">
+                    <label for="totalQty" class="form-label">Total Quantity</label>
+                    <input type="number" class="form-control" id="totalQty" name="totalQty" required>
+                </div>
+                <div class="mb-3">
+                    <label for="item" class="form-label">Item</label>
+                    <input type="number" class="form-control" id="item" name="item" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Fetch data from the API and populate the table
+        async function fetchData() {
+            console.log('data')
+            
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/stocks/');
+                console.log('data=',response)
+                const data = await response.json();
+
+                // Group items by name
+                const groupedData = data.reduce((acc, item) => {
+                    if (!acc[item.item_name]) {
+                        acc[item.item_name] = [];
+                    }
+                    acc[item.item_name].push(item);
+                    return acc;
+                }, {});
+
+                const tableBody = document.getElementById('itemTableBody');
+                tableBody.innerHTML = '';
+
+                // Render grouped data
+                for (const [itemName, items] of Object.entries(groupedData)) {
+                    items.forEach((item, index) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index === 0 ? itemName : ''}</td>
+                            <td>${item.piece_per_box}</td>
+                            <td>${item.daily_total}</td>
+                            <td>${item.date}</td>
+                            <td>${item.item_date}</td>
+                            <td>${item.qty_box}</td>
+                            <td>${item.qty_piece}</td>
+                            <td>${item.time}</td>
+                            <td>${item.total_qty}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('entryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/stocks/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    alert('Entry submitted successfully!');
+                    e.target.reset();
+                    fetchData(); // Refresh the table
+                } else {
+                    alert('Failed to submit entry.');
+                }
+            } catch (error) {
+                console.error('Error submitting entry:', error);
+            }
+        });
+
+        // Initial fetch
+        fetchData();
+    </script>
+</body>
+</html>
