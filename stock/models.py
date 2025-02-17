@@ -1,6 +1,8 @@
 from django.db.models import Sum
 from django.db import models, transaction
+from django.contrib.auth.models import User
 class Item(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, unique=True)
     piece_per_box = models.IntegerField(default=0)
     mrp = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -12,6 +14,7 @@ class Item(models.Model):
         db_table = 'item'
 
 class Stock(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='stock_entries')
     date = models.DateField()  # The day when the stock is recorded
     item_date = models.DateField()  # Specific item's date
@@ -24,6 +27,7 @@ class Stock(models.Model):
         db_table = 'stock'
 
 class Customer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     shopname = models.CharField(max_length=100, blank=True, null=True)  # Optional field
     phone_no = models.CharField(max_length=15)
@@ -33,6 +37,7 @@ class Customer(models.Model):
         return self.name
 
 class Supplier(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     shopname = models.CharField(max_length=100, blank=True, null=True)  # Optional field
     phone_no = models.CharField(max_length=15)
@@ -42,6 +47,7 @@ class Supplier(models.Model):
         return self.name
 
 class Driver(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     vehicle_name = models.CharField(max_length=100, blank=True, null=True)  # Optional field
     vehicle_no = models.CharField(max_length=50)
@@ -52,9 +58,8 @@ class Driver(models.Model):
     def __str__(self):
         return self.name
 
-
-
 class SupplierOrder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='orders')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='supplier_orders')
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='supplier_driver')
@@ -89,6 +94,7 @@ class SupplierOrder(models.Model):
 
 
 class CustomerOrder(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='customer_orders')
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='customer_driver')
@@ -135,6 +141,7 @@ class CustomerOrder(models.Model):
 
 
 class CustomerItemPrice(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='customer_prices')
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='customer_prices')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -144,6 +151,7 @@ class CustomerItemPrice(models.Model):
         return f"{self.customer.name} - {self.item.name}"
 
 class SupplierItemPrice(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='supplier_prices')
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, related_name='supplier_prices')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -153,6 +161,7 @@ class SupplierItemPrice(models.Model):
         return f"{self.supplier.name} - {self.item.name}"
 
 class Receipt(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     receipt_no = models.CharField(max_length=20, unique=True)
     date = models.DateField()
     customer_name = models.CharField(max_length=100)
@@ -163,6 +172,7 @@ class Receipt(models.Model):
         return f"Receipt {self.receipt_no} - {self.customer_name}"
 
 class Payment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     payment_no = models.CharField(max_length=20, unique=True)
     date = models.DateField()
     customer_name = models.CharField(max_length=100)

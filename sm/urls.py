@@ -1,27 +1,54 @@
 from django.contrib import admin
-from django.urls import path
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from stock.views import CashbookView, CustomerItemPriceViewSet, CustomerOrderViewSet, CustomerViewSet, DriverViewSet, ItemViewSet, LedgerView,\
-PaymentViewSet, ReceiptViewSet, StockViewSet, SupplierItemPriceViewSet, SupplierOrderViewSet, SupplierViewSet
-from stock.views import export_stock_to_excel
+from stock.views import (
+    ItemViewSet, LoginAPI, StockViewSet, CustomerViewSet, SupplierViewSet, CustomerOrderViewSet,
+    SupplierOrderViewSet, DriverViewSet, CustomerItemPriceViewSet, SupplierItemPriceViewSet,
+    ReceiptViewSet, PaymentViewSet, CashbookView, LedgerView, export_stock_to_excel
+)
 
+# Create a router and register all ViewSets
 router = DefaultRouter()
-router.register(r'stocks', StockViewSet)
-router.register(r'items', ItemViewSet, basename='item')
-router.register(r'customer', CustomerViewSet, basename='customer')
-router.register(r'supplier', SupplierViewSet, basename='supplier')
-router.register(r'customer-order', CustomerOrderViewSet, basename='customer-order')
-router.register(r'supplier-order', SupplierOrderViewSet, basename='supplier-order')
-router.register(r'driver', DriverViewSet, basename='driver')
-router.register(r'customer-item-price', CustomerItemPriceViewSet, basename='customer-item-price')
-router.register(r'supplier-item-price', SupplierItemPriceViewSet, basename='supplier-item-price')
-router.register(r'receipt', ReceiptViewSet, basename='receipt')
-router.register(r'payment', PaymentViewSet, basename='payment')
 
+# Item URLs
+router.register(r'items', ItemViewSet, basename='item')
+
+# Stock URLs
+router.register(r'stocks', StockViewSet, basename='stock')
+
+# Customer URLs
+router.register(r'customers', CustomerViewSet, basename='customer')
+
+# Supplier URLs
+router.register(r'suppliers', SupplierViewSet, basename='supplier')
+
+# CustomerOrder URLs
+router.register(r'customer-orders', CustomerOrderViewSet, basename='customer-order')
+
+# SupplierOrder URLs
+router.register(r'supplier-orders', SupplierOrderViewSet, basename='supplier-order')
+
+# Driver URLs
+router.register(r'drivers', DriverViewSet, basename='driver')
+
+# CustomerItemPrice URLs
+router.register(r'customer-item-prices', CustomerItemPriceViewSet, basename='customer-item-price')
+
+# SupplierItemPrice URLs
+router.register(r'supplier-item-prices', SupplierItemPriceViewSet, basename='supplier-item-price')
+
+# Receipt URLs
+router.register(r'receipts', ReceiptViewSet, basename='receipt')
+
+# Payment URLs
+router.register(r'payments', PaymentViewSet, basename='payment')
+
+
+# Custom URLs for additional views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/login/', LoginAPI.as_view(), name='login'), 
     path('api/cashbook/', CashbookView.as_view(), name='cashbook-api'),
     path('api/ledger/', LedgerView.as_view(), name='ledger-api'),
     path('export-stock/<str:date>/', export_stock_to_excel, name='export_stock'),

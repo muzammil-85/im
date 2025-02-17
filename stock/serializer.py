@@ -1,6 +1,32 @@
 from rest_framework import serializers
 from .models import Customer, CustomerItemPrice, CustomerOrder, Driver, Payment, Receipt, Stock, Supplier, SupplierItemPrice, SupplierOrder
 from .models import Item
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+
+        if username and password:
+            user = User.objects.filter(username=username).first()
+            if user and user.check_password(password):
+                refresh = RefreshToken.for_user(user)
+                return {
+                    'username': user.username,
+                    'email': user.email,
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    }
+                }
+            raise serializers.ValidationError("Invalid credentials.")
+        raise serializers.ValidationError("Username and password are required.")
 
 class StockSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='item.name', read_only=True)
